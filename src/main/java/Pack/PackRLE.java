@@ -30,7 +30,6 @@ import java.util.List;
 public class PackRLE {
     private static final byte a = 127;
     private static final byte b = -128;
-    private static DataOutputStream output;
     /**
      * -z
      * Flag wrap text.
@@ -55,27 +54,45 @@ public class PackRLE {
     @Argument(index = 0)
     private String inputFile;
 
+
     void A() throws Exception {
-        if (!z && !u) {
+        if (!new File(inputFile).exists() || !new File(inputFile).isFile()) {
+            throw new IOException("invalid file");
         }
+        boolean f = true;
+
+        if (!new File(outFile).exists() || !new File(outFile).isFile()) {
+            f = false;
+        }
+        DataInputStream input = new DataInputStream(new FileInputStream(inputFile));
+        DataOutputStream output1 = new DataOutputStream(new FileOutputStream("output.txt"));
+        DataOutputStream output2 = new DataOutputStream(new FileOutputStream(outFile));
         if (z) {
-            rle();
+            if (!f)
+                rle(input, output1);
+            else
+                rle(input, output2);
+
         } else if (u) {
-            antiRle();
+            if (!f)
+                antiRle(input, output1);
+            else
+                antiRle(input, output2);
+
         }
     }
 
-    static void dp(byte a, byte b) throws Exception {
+    void dp(byte a, byte b, DataOutputStream output) throws Exception {
         output.writeByte(a);
         output.writeByte(b);
     }
 
-    public static void rle() throws Exception {
+    public void rle(DataInputStream input, DataOutputStream output) throws Exception {
         //ArrayList for writing various characters.
         List<Byte> list = new ArrayList<Byte>();
 
-        DataInputStream input = new DataInputStream(new FileInputStream("text"));
-        output = new DataOutputStream(new FileOutputStream("RLEtext"));
+        //DataInputStream input = new DataInputStream(new FileInputStream("text"));
+        //output = new DataOutputStream(new FileOutputStream("RLEtext"));
 
         //Counter sequence of same characters
         byte count = 1;
@@ -100,7 +117,6 @@ public class PackRLE {
                     list.add(i, symbol);
                     i++;
                 }
-
 
                 /*
                    If the counter  different_count has reached its minimum value,
@@ -135,7 +151,7 @@ public class PackRLE {
                 }
                 count++;
                 if (count == a) {
-                    dp(count, symbol);
+                    dp(count, symbol, output);
                     count = 1;
                 }
                 different_count = 1;
@@ -147,7 +163,7 @@ public class PackRLE {
              write them down and reset the counter and assign the symbol new to the next byte.
              */
             if (count > 1) {
-                dp(count, symbol);
+                dp(count, symbol, output);
             }
             symbol = c;
             count = 1;
@@ -170,7 +186,7 @@ public class PackRLE {
          */
         else {
             if (count != 1) {
-                dp(count, symbol);
+                dp(count, symbol,output);
             } else {
                 output.writeByte(-1);
                 output.writeByte(symbol);
@@ -180,9 +196,9 @@ public class PackRLE {
         input.close();
     }
 
-    public static void antiRle() throws Exception {
-        DataInputStream input = new DataInputStream(new FileInputStream("RlEtext"));
-        DataOutputStream output = new DataOutputStream(new FileOutputStream("atext"));
+    public  void antiRle(DataInputStream input, DataOutputStream output) throws Exception {
+        //DataInputStream input = new DataInputStream(new FileInputStream("RlEtext"));
+        // DataOutputStream output = new DataOutputStream(new FileOutputStream("atext"));
         /*
          Unpacking, starting from the first byte, if it is greater than 0,
          write the same sequence using a loop, otherwise, if a byte is less than 0,

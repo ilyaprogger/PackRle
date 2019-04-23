@@ -2,9 +2,8 @@ package Pack;
 import org.kohsuke.args4j.CmdLineParser;
 
 public class Main {
-    public static void main(String[] args) throws Exception {
-        PackRLE.rle();
-        PackRLE.antiRle();
+    public static void main(String[] args) {
+
         PackRLE pack = new PackRLE();
         CmdLineParser parser = new CmdLineParser(pack);
         try {
