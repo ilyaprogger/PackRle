@@ -23,8 +23,26 @@ public class PackRLETest {
         assertTrue(FileUtils.contentEquals(file,file1));
         output.close();
         input.close();
+        output1.close();
+        input1.close();
     }
-
+    @Test
+    void test2() throws Exception {
+        DataInputStream input = new DataInputStream(new FileInputStream("text1"));
+        DataOutputStream output = new DataOutputStream(new FileOutputStream("RlEtext1"));
+        DataInputStream input1 = new DataInputStream(new FileInputStream("RlEtext1"));
+        DataOutputStream output1 = new DataOutputStream(new FileOutputStream("atext1"));
+        PackRLE pack = new PackRLE();
+        pack.rle(input,output);
+        pack.antiRle(input1,output1);
+        File file = new File("text1");
+        File file1 = new File("atext1");
+        assertTrue(FileUtils.contentEquals(file,file1));
+        output.close();
+        input.close();
+        output1.close();
+        input1.close();
+    }
     @Test
     void test3() throws Exception {
         DataInputStream input = new DataInputStream(new FileInputStream("text2"));
@@ -39,5 +57,7 @@ public class PackRLETest {
         assertTrue(FileUtils.contentEquals(file,file1));
         output.close();
         input.close();
+        output1.close();
+        input1.close();
     }
 }

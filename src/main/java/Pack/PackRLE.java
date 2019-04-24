@@ -65,21 +65,18 @@ public class PackRLE {
             f = false;
         }
         DataInputStream input = new DataInputStream(new FileInputStream(inputFile));
-        DataOutputStream output1 = new DataOutputStream(new FileOutputStream("output.txt"));
-        DataOutputStream output2 = new DataOutputStream(new FileOutputStream(outFile));
+        DataOutputStream output;
+        if (f == false)
+             output = new DataOutputStream(new FileOutputStream("output.txt"));
+        else
+             output = new DataOutputStream(new FileOutputStream(outFile));
         if (z) {
-            if (!f)
-                rle(input, output1);
-            else
-                rle(input, output2);
-
+            rle(input, output);
         } else if (u) {
-            if (!f)
-                antiRle(input, output1);
-            else
-                antiRle(input, output2);
-
+            antiRle(input, output);
         }
+        output.close();
+        input.close();
     }
 
     void wiriteByte(byte a, byte b, DataOutputStream output) throws Exception {
@@ -150,7 +147,7 @@ public class PackRLE {
                     count++;
                     if (count == a) {
                         wiriteByte(count, symbol, output);
-                        count = 1;
+                        count = 0;
                     }
                     different_count = 1;
                     continue;
