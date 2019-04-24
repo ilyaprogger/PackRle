@@ -34,7 +34,7 @@ public class PackRLE {
      * -z
      * Flag wrap text.
      */
-    @Option(name = "-z ", usage = "Packages a text file in the command line argument", forbids = "-u")
+    @Option(name = "-z", usage = "Packages a text file in the command line argument", forbids = "-u")
     private boolean z;
     /**
      * -u
@@ -55,7 +55,7 @@ public class PackRLE {
     private String inputFile;
 
 
-    void A() throws Exception {
+    void main() throws Exception {
         if (!new File(inputFile).exists() || !new File(inputFile).isFile()) {
             throw new IOException("invalid file");
         }
@@ -82,57 +82,55 @@ public class PackRLE {
         }
     }
 
-    void dp(byte a, byte b, DataOutputStream output) throws Exception {
+    void wiriteByte(byte a, byte b, DataOutputStream output) throws Exception {
         output.writeByte(a);
         output.writeByte(b);
     }
 
     public void rle(DataInputStream input, DataOutputStream output) throws Exception {
+
         //ArrayList for writing various characters.
         List<Byte> list = new ArrayList<Byte>();
 
-        //DataInputStream input = new DataInputStream(new FileInputStream("text"));
-        //output = new DataOutputStream(new FileOutputStream("RLEtext"));
-
-        //Counter sequence of same characters
+        //Counter sequence of same characters.
         byte count = 1;
 
-        //Counter sequence of different characters
+        //Counter sequence of different characters.
         short i = 0;
         byte different_count = 0;
+        //Check that the input file is not empty.
+        if (input.available() != 0) {
+            //Save the first byte for further comparison.
+            byte symbol = input.readByte();
+            //Comparing each byte of a character with the following.
+            while (input.available() > 0) {
 
-        //Save the first byte for further comparison.
-        byte symbol = input.readByte();
+                //Save the next byte
+                byte c = input.readByte();
 
-        //Comparing each byte of a character with the following.
-        while (input.available() > 0) {
-
-            //Save the next byte
-            byte c = input.readByte();
-
-            //Если байты различны уменьшаем на 1 different_count и записываем наш байт в ArrayList.
-            if (symbol != c) {
-                different_count--;
-                if (count == 1) {
-                    list.add(i, symbol);
-                    i++;
-                }
+                // If the bytes are different, reduce by 1 different_count and write our byte to ArrayList.
+                if (symbol != c) {
+                    different_count--;
+                    if (count == 1) {
+                        list.add(i, symbol);
+                        i++;
+                    }
 
                 /*
                    If the counter  different_count has reached its minimum value,
                    first write it down then by-byte assembled ArrayList,
                    then clear the ArrayList and reset the counter different_count.
                  */
-                if (different_count == b) {
-                    output.writeByte(different_count);
-                    for (int j = 0; j < i; j++) {
-                        output.writeByte(list.get(j));
+                    if (different_count == b) {
+                        output.writeByte(different_count);
+                        for (int j = 0; j < i; j++) {
+                            output.writeByte(list.get(j));
+                        }
+                        list.clear();
+                        i = 0;
+                        different_count = 0;
                     }
-                    list.clear();
-                    i = 0;
-                    different_count = 0;
                 }
-            }
 
             /*If the bytes are equal, but before that there was a
             sequence of different bytes, we write a different sequence
@@ -140,65 +138,64 @@ public class PackRLE {
             because the bytes are the same and we check if count has reached the maximum value,
              if it has reached write and zero.
              */
-            if (symbol == c) {
-                if (count == 1 && different_count != 0 && different_count != 1) {
-                    output.writeByte(different_count);
-                    for (int j = 0; j < i; j++) {
-                        output.writeByte(list.get(j));
+                if (symbol == c) {
+                    if (count == 1 && different_count != 0 && different_count != 1) {
+                        output.writeByte(different_count);
+                        for (int j = 0; j < i; j++) {
+                            output.writeByte(list.get(j));
+                        }
+                        list.clear();
+                        i = 0;
                     }
-                    list.clear();
-                    i = 0;
+                    count++;
+                    if (count == a) {
+                        wiriteByte(count, symbol, output);
+                        count = 1;
+                    }
+                    different_count = 1;
+                    continue;
                 }
-                count++;
-                if (count == a) {
-                    dp(count, symbol, output);
-                    count = 1;
-                }
-                different_count = 1;
-                continue;
-            }
 
             /*
             When a sequence of identical bytes is interrupted,
              write them down and reset the counter and assign the symbol new to the next byte.
              */
-            if (count > 1) {
-                dp(count, symbol, output);
+                if (count > 1) {
+                    wiriteByte(count, symbol, output);
+                }
+                symbol = c;
+                count = 1;
             }
-            symbol = c;
-            count = 1;
-        }
         /*
           If the text ends with a different sequence, write the collected ArrayList
          */
-        if (different_count < 1) {
-            output.writeByte(different_count - 1);
-            for (int j = 0; j < i; j++) {
-                output.writeByte(list.get(j));
+            if (different_count < 1) {
+                output.writeByte(different_count - 1);
+                for (int j = 0; j < i; j++) {
+                    output.writeByte(list.get(j));
+                }
+                output.writeByte(symbol);
             }
-            output.writeByte(symbol);
-        }
 
         /*
          Otherwise, if at the end there is a sequence of identical bytes,
           we write it down or if 1 byte after such a sequence we write -1
           and after the value of a byte.
          */
-        else {
-            if (count != 1) {
-                dp(count, symbol,output);
-            } else {
-                output.writeByte(-1);
-                output.writeByte(symbol);
+            else {
+                if (count != 1) {
+                    wiriteByte(count, symbol, output);
+                } else {
+                    output.writeByte(-1);
+                    output.writeByte(symbol);
+                }
             }
         }
         output.close();
         input.close();
     }
 
-    public  void antiRle(DataInputStream input, DataOutputStream output) throws Exception {
-        //DataInputStream input = new DataInputStream(new FileInputStream("RlEtext"));
-        // DataOutputStream output = new DataOutputStream(new FileOutputStream("atext"));
+    public void antiRle(DataInputStream input, DataOutputStream output) throws Exception {
         /*
          Unpacking, starting from the first byte, if it is greater than 0,
          write the same sequence using a loop, otherwise, if a byte is less than 0,
