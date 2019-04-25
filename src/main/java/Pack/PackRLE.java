@@ -56,20 +56,20 @@ public class PackRLE {
 
 
     void main() throws Exception {
+        DataOutputStream output = new DataOutputStream(new FileOutputStream("output.txt"));
+
+        //If an incorrect input file is entered, then we throw an exception.
         if (!new File(inputFile).exists() || !new File(inputFile).isFile()) {
             throw new IOException("invalid file");
         }
-        boolean f = true;
-
-        if (!new File(outFile).exists() || !new File(outFile).isFile()) {
-            f = false;
-        }
         DataInputStream input = new DataInputStream(new FileInputStream(inputFile));
-        DataOutputStream output;
-        if (f == false)
-             output = new DataOutputStream(new FileOutputStream("output.txt"));
-        else
-             output = new DataOutputStream(new FileOutputStream(outFile));
+
+        //If by default the output file is written to it, if not present by default in output.txt.
+        if (new File(outFile).exists() || new File(outFile).isFile()) {
+            output = new DataOutputStream(new FileOutputStream(outFile));
+        }
+
+        //Flag selection.
         if (z) {
             rle(input, output);
         } else if (u) {
